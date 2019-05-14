@@ -1,15 +1,15 @@
 #pragma once
 
 /*
-  Base class for every initializable module which needs physical Arduino pins.
-  Every class inheriting this interface should provide
+  Base class for every initializable module which needs physical pins, and
+  initialization. Every class inheriting this interface should provide
     * internalInitialize implementation
     * setPins function
 */
 
-class ArduinoModule {
+class Module {
  public:
-  virtual ~ArduinoModule() = default;
+  virtual ~Module() = default;
 
   bool initialize() {
     if (!pinsSet()) {
@@ -19,8 +19,8 @@ class ArduinoModule {
     return internalInitialize();
   }
 
-  bool initialized() const { return this->isInitialized; }
-  bool pinsSet() const { return this->arePinsSet; }
+  bool initialized() const { return isInitialized; }
+  bool pinsSet() const { return arePinsSet; }
 
  protected:
   bool arePinsSet{false};
