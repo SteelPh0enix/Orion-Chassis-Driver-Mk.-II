@@ -28,6 +28,6 @@ Each BTS7960 has the following maximum ratings:
 * Supply voltage: -0.3V to 45V
 * Logic supply voltage: -0.3V to 5.3V
 * Continuous drain current: +/- 40A
-* Pulsed drain current: +/- 60A
+* Pulsed drain current: +/- 60A (tpulse = 10ms)
 * Maximum junction temperature: 150°C
 * Maximum PWM frequency: 25kHz
