@@ -2,9 +2,11 @@
 
 /*
   Base class for every initializable module which needs physical pins, and
-  initialization. Every class inheriting this interface should provide
-    * internalInitialize implementation
-    * setPins function
+  initialization. Every class inheriting this interface should provide:
+  * internalInitialize implementation, returning initialization result (true
+    for success)
+  * setPins function, setting arePinsSet flag to `true` when called (may do
+    checks if needed)
 */
 
 class Module {
