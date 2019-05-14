@@ -16,3 +16,18 @@ As much software and patterns from previous version of driver as possible will b
 
 * Changing PWM frequency to eliminate driver noise
 * [nanopb](https://jpa.kapsi.fi/nanopb/) support for communication
+
+## BTS7960 characteristics
+
+BTS7960 is half-bridge power driver. We are using COTS modules which have two of them, making it effectively H-bridge.
+
+### Maximum ratings
+
+Each BTS7960 has the following maximum ratings:
+
+* Supply voltage: -0.3V to 45V
+* Logic supply voltage: -0.3V to 5.3V
+* Continuous drain current: +/- 40A
+* Pulsed drain current: +/- 60A
+* Maximum junction temperature: 150°C
+* Maximum PWM frequency: 25kHz
