@@ -45,7 +45,8 @@ void BTS7960::setPower(unsigned power) {
     return;
   }
 
-  driverPower = power >= PWMResolution ? PWMResolution : power;
+  driverPower =
+      power >= PWMResolution<unsigned>() ? PWMResolution<unsigned>() : power;
   analogWrite(pwmPin, driverPower);
 }
 
@@ -61,7 +62,7 @@ double BTS7960::currentSensorRatio() const {
 }
 
 double BTS7960::current() const {
-  double sensorReading = static_cast<double>(analogRead(currentSensorPin));
-  double sensorVoltage = VoltsPerADCUnit * sensorReading;
+  double sensorReading{static_cast<double>(analogRead(currentSensorPin))};
+  double sensorVoltage{VoltsPerADCUnit<double>() * sensorReading};
   return sensorVoltage * currentSensorRatio();
 }
