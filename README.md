@@ -14,7 +14,7 @@ As much software and patterns from previous version of driver as possible will b
 
 ### Planned additions (low-priority, good-to-have features)
 
-* Changing PWM frequency to eliminate driver noise
+* ~~Changing PWM frequency to eliminate driver noise~~ - not a thing, because of Arduino limitations
 * [nanopb](https://jpa.kapsi.fi/nanopb/) support for communication
 
 ## BTS7960 characteristics
