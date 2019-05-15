@@ -11,6 +11,11 @@
 
 class Module {
  public:
+  // Resolution constants. Change them in case of moving code to another
+  // microcontroller
+  static constexpr unsigned ADCResolution{1024};
+  static constexpr unsigned PWMResolution{256};
+
   virtual ~Module() = default;
 
   bool initialize() {
