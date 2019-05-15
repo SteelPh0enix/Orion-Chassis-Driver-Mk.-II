@@ -19,19 +19,49 @@ bool BTS7960::internalInitialize() {
   pinMode(enablePin, OUTPUT);
   pinMode(currentSensorPin, INPUT);
 
-  digitalWrite(enablePin, isEnabled());
+  digitalWrite(enablePin, enabled());
+  analogWrite(pwmPin, driverPower);
 
   return true;
 }
 
-void BTS7960::enable() {
-  isEnabledFlag = true;
-  digitalWrite(enablePin, true);
+void BTS7960::enable() { setEnabled(true); }
+
+void BTS7960::disable() { setEnabled(false); }
+
+void BTS7960::setEnabled(bool status) {
+  if (!initialized()) {
+    return;
+  }
+
+  enabledFlag = status;
+  digitalWrite(enablePin, status);
 }
 
-void BTS7960::disable() {
-  isEnabledFlag = false;
-  digitalWrite(enablePin, false);
+bool BTS7960::enabled() const { return enabledFlag; }
+
+void BTS7960::setPower(unsigned power) {
+  if (!initialized()) {
+    return;
+  }
+
+  driverPower = power >= PWMResolution ? PWMResolution : power;
+  analogWrite(pwmPin, driverPower);
 }
 
-bool BTS7960::isEnabled() const { return isEnabledFlag; }
+unsigned BTS7960::power() const { return driverPower; }
+
+void BTS7960::setCurrentSensorRatio(double resistorValue,
+                                    double currentSenseValue) {
+  currentSensorRatioMultiplier = currentSenseValue / resistorValue;
+}
+
+double BTS7960::currentSensorRatio() const {
+  return currentSensorRatioMultiplier;
+}
+
+double BTS7960::current() const {
+  double sensorReading = static_cast<double>(analogRead(currentSensorPin));
+  double sensorVoltage = VoltsPerADCUnit * sensorReading;
+  return sensorVoltage * currentSensorRatio();
+}
