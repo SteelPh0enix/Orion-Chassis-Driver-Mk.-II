@@ -36,15 +36,15 @@ void BTS7960::setPower(int power) {
 void BTS7960::setDirection(BTS7960::Direction direction) {
   switch (direction) {
     case Direction::None:
-      digitalWrite(m_directionAPin, LOW);
-      digitalWrite(m_directionBPin, LOW);
+      digitalWrite(m_directionAPin, HIGH);
+      digitalWrite(m_directionBPin, HIGH);
       break;
     case Direction::Forward:
       digitalWrite(m_directionAPin, HIGH);
-      digitalWrite(m_directionBPin, LOW);
+      digitalWrite(m_directionBPin, HIGH);
       break;
     case Direction::Backward:
-      digitalWrite(m_directionAPin, LOW);
+      digitalWrite(m_directionAPin, HIGH);
       digitalWrite(m_directionBPin, HIGH);
       break;
   }
@@ -59,6 +59,7 @@ void BTS7960::powerStep() {
 void BTS7960::setPowerStepAmount(int amount) { m_powerStep = amount; }
 
 void BTS7960::setPowerInstant(int power) {
+  power = constrain(power, -PWMResolution(), PWMResolution());
   if (power > 0) {
     setDirection(Direction::Forward);
     analogWrite(m_pwmAPin, power);
@@ -95,7 +96,7 @@ int BTS7960::calculateNextPowerStep() {
   // slowing down, motor will start gaining speed. This prevents it by swapping
   // sign in case of m_targetPower being 0 and actualPower being positive.
   auto differenceSign = sign(m_targetPower);
-  if (m_targetPower == 0 && m_actualPower > 0) {
+  if (m_targetPower == 0 && abs(m_actualPower) > 0) {
     differenceSign *= -1;
   }
 

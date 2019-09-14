@@ -56,6 +56,10 @@ void loop() {
       jsonDoc.clear();
       jsonDoc["ErrorCode"] = 0;
       jsonDoc["ErrorDescription"] = "OK";
+      jsonDoc["LF"] = wheelLF.actualPower();
+      jsonDoc["RF"] = wheelRF.actualPower();
+      jsonDoc["LB"] = wheelLB.actualPower();
+      jsonDoc["RB"] = wheelRB.actualPower();
     } else {
       wheelLF.stop();
       wheelRF.stop();

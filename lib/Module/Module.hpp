@@ -20,7 +20,7 @@ class Module {
 
   template <typename T = double>
   static constexpr T PWMResolution() {
-    return 256.;
+    return 255.;
   }
 
   template <typename T = double>

@@ -21,6 +21,8 @@ class BTS7960 : public Module {
   void powerStep();
   void setPowerStepAmount(int amount);
 
+  int actualPower() const { return m_actualPower; }
+
  private:
   int calculateNextPowerStep();
   void setPowerInstant(int power);
