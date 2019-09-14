@@ -5,32 +5,32 @@
   initialization. Every class inheriting this interface should provide:
   * internalInitialize implementation, returning initialization result (true
     for success)
-  * setPins function, setting arePinsSet flag to `true` when called (may do
-    checks if needed)
+  * setPins function, which will call `pinsHasBeenSet` function after setting
+  pins up.
 */
 
 class Module {
  public:
   // Resolution constants. Change them in case of moving code to another
   // microcontroller
-  template <typename T>
+  template <typename T = double>
   static constexpr T ADCResolution() {
-    return 1024;
+    return 1024.;
   }
 
-  template <typename T>
+  template <typename T = double>
   static constexpr T PWMResolution() {
-    return 256;
+    return 256.;
   }
 
-  template <typename T>
-  static constexpr T ADCVoltage() {
-    return 5;
+  template <typename T = double>
+  static constexpr T DefaultADCVoltage() {
+    return 5.;
   }
 
-  template <typename T>
-  static constexpr T VoltsPerADCUnit() {
-    return ADCVoltage<T>() / ADCResolution<T>();
+  template <typename T = double>
+  static constexpr T VoltsPerADCUnit(T ADCVoltage = DefaultADCVoltage()) {
+    return ADCVoltage / ADCResolution<T>();
   }
 
   virtual ~Module() = default;
@@ -40,15 +40,18 @@ class Module {
       return false;
     }
 
-    return internalInitialize();
+    isInitialized = internalInitialize();
+    return isInitialized;
   }
 
   bool initialized() const { return isInitialized; }
   bool pinsSet() const { return arePinsSet; }
 
  protected:
+  virtual bool internalInitialize() = 0;
+  void pinsHasBeenSet() { arePinsSet = true; }
+
+ private:
   bool arePinsSet{false};
   bool isInitialized{false};
-
-  virtual bool internalInitialize() = 0;
 };

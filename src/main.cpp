@@ -1,78 +1,79 @@
 #include <Arduino.h>
+#include <ArduinoJson.hpp>
 #include <BTS7960.hpp>
+#include <Pinout.hpp>
 #include <Settings.hpp>
+#include <driving_algorithm.hpp>
 
-constexpr uint8_t BTSPWMPin{};
-constexpr uint8_t BTSEnablePin{};
-constexpr uint8_t BTSSensorPin{};
+BTS7960 wheelLF;
+BTS7960 wheelRF;
+BTS7960 wheelLB;
+BTS7960 wheelRB;
 
-BTS7960 bts(BTSPWMPin, BTSEnablePin, BTSSensorPin);
+unsigned long wheelInterruptCounter{};
 
-void BTSTestFastPowerChange(BTS7960& bts, unsigned maxPower, unsigned stepCount,
-                            unsigned sleepTime) {
-  unsigned powerPerStep{maxPower / stepCount};
-  bts.setPower(0);
-  bts.enable();
+char jsonBuffer[Settings::JsonBufferSize]{};
+ArduinoJson::StaticJsonDocument<Settings::JsonBufferSize> jsonDoc{};
 
-  for (unsigned step{1}; step <= stepCount; step++) {
-    char messageBuffer[64]{};
-    sprintf(messageBuffer, "Powering up, step #%d of %d. Power: %d", step,
-            stepCount, powerPerStep * step);
-    Serial.println(messageBuffer);
-
-    bts.setPower(powerPerStep * step);
-    delay(sleepTime);
-  }
-
-  for (unsigned step{1}; step <= stepCount; step++) {
-    char messageBuffer[64]{};
-    sprintf(messageBuffer, "Powering down, step #%d of %d. Power: %d", step,
-            stepCount, powerPerStep * step);
-    Serial.println(messageBuffer);
-
-    bts.setPower(powerPerStep * step);
-    delay(sleepTime);
-  }
-
-  Serial.println("Test finished, shutting BTS down");
-  bts.setPower(0);
-  bts.disable();
-}
-
-void BTSTestSlowPowerChange(BTS7960& bts, unsigned maxPower,
-                            unsigned stepIncrease, unsigned stepTime) {
-  bts.setPower(0);
-  bts.enable();
-
-  unsigned stepCount = maxPower / stepIncrease;
-
-  char messageBuffer[100]{};
-  sprintf(messageBuffer,
-          "Increasing power by %d every %dms for %dms to reach %d power ratio",
-          stepIncrease, stepTime, stepCount * stepTime, maxPower);
-  Serial.println(messageBuffer);
-
-  for (unsigned step{0}; step < stepCount; step++) {
-    bts.setPower(bts.power() + stepIncrease);
-    delay(stepTime);
-  }
-
-  Serial.println("Decreasing power the same way...");
-  for (unsigned step{0}; step < stepCount; step++) {
-    bts.setPower(bts.power() - stepIncrease);
-    delay(stepTime);
-  }
-
-  bts.setPower(0);
-  bts.disable();
-}
+DefaultDriveAlgorithm algo;
 
 void setup() {
   Serial.begin(Settings::SerialBaudRate<unsigned long>());
-  Serial.print("BTS initialization: ");
-  Serial.println(bts.initialize() ? "Successfull" : "Failed");
 
-  // Put tests here
+  wheelLF.setPins(Pinout::WheelLF::PWMA, Pinout::WheelLF::PWMB,
+                  Pinout::WheelLF::DirectionA, Pinout::WheelLF::DirectionB,
+                  Pinout::WheelLF::FeedbackA, Pinout::WheelLF::FeedbackB);
+  wheelRF.setPins(Pinout::WheelRF::PWMA, Pinout::WheelRF::PWMB,
+                  Pinout::WheelRF::DirectionA, Pinout::WheelRF::DirectionB,
+                  Pinout::WheelRF::FeedbackA, Pinout::WheelRF::FeedbackB);
+  wheelLB.setPins(Pinout::WheelLB::PWMA, Pinout::WheelLB::PWMB,
+                  Pinout::WheelLB::DirectionA, Pinout::WheelLB::DirectionB,
+                  Pinout::WheelLB::FeedbackA, Pinout::WheelLB::FeedbackB);
+  wheelRB.setPins(Pinout::WheelRB::PWMA, Pinout::WheelRB::PWMB,
+                  Pinout::WheelRB::DirectionA, Pinout::WheelRB::DirectionB,
+                  Pinout::WheelRB::FeedbackA, Pinout::WheelRB::FeedbackB);
+
+  wheelLF.initialize();
+  wheelRF.initialize();
+  wheelLB.initialize();
+  wheelRB.initialize();
+
+  wheelInterruptCounter = millis();
 }
 
-void loop() {}
+void loop() {
+  if (Serial.available()) {
+    Serial.readBytesUntil('\n', jsonBuffer, Settings::JsonBufferSize);
+    jsonDoc.clear();
+    auto deserializationResult =
+        ArduinoJson::deserializeJson(jsonDoc, jsonBuffer);
+    if (deserializationResult == ArduinoJson::DeserializationError::Ok) {
+      auto wheelInput = algo.translate(jsonDoc["Y"], jsonDoc["X"]);
+      wheelLF.setPower(wheelInput.left_speed);
+      wheelLB.setPower(wheelInput.left_speed);
+      wheelRB.setPower(wheelInput.right_speed);
+      wheelRF.setPower(wheelInput.right_speed);
+      jsonDoc.clear();
+      jsonDoc["ErrorCode"] = 0;
+      jsonDoc["ErrorDescription"] = "OK";
+    } else {
+      wheelLF.stop();
+      wheelRF.stop();
+      wheelLB.stop();
+      wheelRB.stop();
+      jsonDoc.clear();
+      jsonDoc["ErrorCode"] = deserializationResult.code();
+      jsonDoc["ErrorDescription"] = deserializationResult.c_str();
+    }
+    ArduinoJson::serializeJson(jsonDoc, Serial);
+    Serial.println();
+  }
+
+  if (millis() - wheelInterruptCounter > 100) {
+    wheelInterruptCounter = millis();
+    wheelLF.powerStep();
+    wheelRF.powerStep();
+    wheelLB.powerStep();
+    wheelRB.powerStep();
+  }
+}
