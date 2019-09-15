@@ -10,8 +10,6 @@ BTS7960 wheelRF;
 BTS7960 wheelLB;
 BTS7960 wheelRB;
 
-unsigned long wheelInterruptCounter{};
-
 char jsonBuffer[Settings::JsonBufferSize]{};
 ArduinoJson::StaticJsonDocument<Settings::JsonBufferSize> jsonDoc{};
 
@@ -37,8 +35,6 @@ void setup() {
   wheelRF.initialize();
   wheelLB.initialize();
   wheelRB.initialize();
-
-  wheelInterruptCounter = millis();
 }
 
 void loop() {
@@ -56,10 +52,10 @@ void loop() {
       jsonDoc.clear();
       jsonDoc["ErrorCode"] = 0;
       jsonDoc["ErrorDescription"] = "OK";
-      jsonDoc["LF"] = wheelLF.actualPower();
-      jsonDoc["RF"] = wheelRF.actualPower();
-      jsonDoc["LB"] = wheelLB.actualPower();
-      jsonDoc["RB"] = wheelRB.actualPower();
+      jsonDoc["LF"] = wheelLF.power();
+      jsonDoc["RF"] = wheelRF.power();
+      jsonDoc["LB"] = wheelLB.power();
+      jsonDoc["RB"] = wheelRB.power();
     } else {
       wheelLF.stop();
       wheelRF.stop();
@@ -71,13 +67,5 @@ void loop() {
     }
     ArduinoJson::serializeJson(jsonDoc, Serial);
     Serial.println();
-  }
-
-  if (millis() - wheelInterruptCounter > 100) {
-    wheelInterruptCounter = millis();
-    wheelLF.powerStep();
-    wheelRF.powerStep();
-    wheelLB.powerStep();
-    wheelRB.powerStep();
   }
 }

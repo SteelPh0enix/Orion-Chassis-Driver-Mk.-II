@@ -15,6 +15,8 @@ CHASSIS_DATA_JSON = {
     "Y": 0,
 }
 
+POWER_STEP = 10
+
 
 def sendDataToChassis(data):
     data_to_send = (json.dumps(data, separators=(',', ':')) +
@@ -38,10 +40,14 @@ def stopChassis():
 if __name__ == "__main__":
     CHASSIS_SERIAL.open()
 
-    keyboard.add_hotkey("w", lambda: setFieldAndSend("Y", 100))
-    keyboard.add_hotkey("x", lambda: setFieldAndSend("Y", -100))
-    keyboard.add_hotkey("a", lambda: setFieldAndSend("X", 100))
-    keyboard.add_hotkey("d", lambda: setFieldAndSend("X", -100))
+    keyboard.add_hotkey("w", lambda: setFieldAndSend(
+        "Y", CHASSIS_DATA_JSON["Y"] + POWER_STEP))
+    keyboard.add_hotkey("x", lambda: setFieldAndSend(
+        "Y", CHASSIS_DATA_JSON["Y"] - POWER_STEP))
+    keyboard.add_hotkey("a", lambda: setFieldAndSend(
+        "X", CHASSIS_DATA_JSON["X"] + POWER_STEP))
+    keyboard.add_hotkey("d", lambda: setFieldAndSend(
+        "X", CHASSIS_DATA_JSON["X"] - POWER_STEP))
     keyboard.add_hotkey("s", lambda: stopChassis())
 
     keyboard.wait()

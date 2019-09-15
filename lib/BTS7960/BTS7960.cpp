@@ -29,22 +29,18 @@ bool BTS7960::internalInitialize() {
   return true;
 }
 
-void BTS7960::setPower(int power) {
-  m_targetPower = constrain(power, -PWMResolution(), PWMResolution());
-}
-
 void BTS7960::setDirection(BTS7960::Direction direction) {
   switch (direction) {
     case Direction::None:
-      digitalWrite(m_directionAPin, HIGH);
-      digitalWrite(m_directionBPin, HIGH);
+      digitalWrite(m_directionAPin, LOW);
+      digitalWrite(m_directionBPin, LOW);
       break;
     case Direction::Forward:
       digitalWrite(m_directionAPin, HIGH);
-      digitalWrite(m_directionBPin, HIGH);
+      digitalWrite(m_directionBPin, LOW);
       break;
     case Direction::Backward:
-      digitalWrite(m_directionAPin, HIGH);
+      digitalWrite(m_directionAPin, LOW);
       digitalWrite(m_directionBPin, HIGH);
       break;
   }
@@ -52,13 +48,7 @@ void BTS7960::setDirection(BTS7960::Direction direction) {
 
 void BTS7960::stop() { setPower(0); }
 
-void BTS7960::powerStep() {
-  setPowerInstant(m_actualPower + calculateNextPowerStep());
-}
-
-void BTS7960::setPowerStepAmount(int amount) { m_powerStep = amount; }
-
-void BTS7960::setPowerInstant(int power) {
+void BTS7960::setPower(int power) {
   power = constrain(power, -PWMResolution(), PWMResolution());
   if (power > 0) {
     setDirection(Direction::Forward);
@@ -71,34 +61,10 @@ void BTS7960::setPowerInstant(int power) {
   } else {
     setDirection(Direction::Backward);
     analogWrite(m_pwmAPin, 0);
-    analogWrite(m_pwmBPin, power);
+    analogWrite(m_pwmBPin, power * -1);
   }
 
-  m_actualPower = power;
+  m_power = power;
 }
 
-template <typename T>
-constexpr int sign(T value) {
-  return value >= 0 ? 1 : -1;
-}
-
-int BTS7960::calculateNextPowerStep() {
-  if (abs(m_actualPower - m_targetPower) < m_powerStep) {
-    return 0;
-  }
-
-  // near-0 edge case in order to prevent fucky behaviour
-  if (abs(m_targetPower) < m_powerStep) {
-    return 0;
-  }
-
-  // Edge case, when target speed is 0 and actual power is positive, instead of
-  // slowing down, motor will start gaining speed. This prevents it by swapping
-  // sign in case of m_targetPower being 0 and actualPower being positive.
-  auto differenceSign = sign(m_targetPower);
-  if (m_targetPower == 0 && abs(m_actualPower) > 0) {
-    differenceSign *= -1;
-  }
-
-  return differenceSign * m_powerStep;
-}
+int BTS7960::power() const { return m_power; }

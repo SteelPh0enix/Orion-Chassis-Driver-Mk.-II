@@ -18,14 +18,9 @@ class BTS7960 : public Module {
   void setDirection(Direction direction);
   void stop();
 
-  void powerStep();
-  void setPowerStepAmount(int amount);
-
-  int actualPower() const { return m_actualPower; }
+  int power() const;
 
  private:
-  int calculateNextPowerStep();
-  void setPowerInstant(int power);
   virtual bool internalInitialize();
 
   uint8_t m_pwmAPin{};
@@ -35,8 +30,5 @@ class BTS7960 : public Module {
   uint8_t m_feedbackAPin{};
   uint8_t m_feedbackBPin{};
 
-  int m_targetPower{};
-  int m_actualPower{};
-  unsigned m_powerStep{5};
-  Direction m_direction{Direction::None};
+  int m_power{};
 };
