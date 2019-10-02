@@ -1,71 +1,40 @@
 #include <Arduino.h>
-#include <ArduinoJson.hpp>
 #include <BTS7960.hpp>
 #include <Pinout.hpp>
 #include <Settings.hpp>
-#include <driving_algorithm.hpp>
 
-BTS7960 wheelLF;
-BTS7960 wheelRF;
-BTS7960 wheelLB;
-BTS7960 wheelRB;
-
-char jsonBuffer[Settings::JsonBufferSize]{};
-ArduinoJson::StaticJsonDocument<Settings::JsonBufferSize> jsonDoc{};
-
-DefaultDriveAlgorithm algo;
+namespace WheelPinout = Pinout::WheelRF;
+BTS7960 driver(WheelPinout::PWMA, WheelPinout::PWMB, WheelPinout::DirectionA, WheelPinout::DirectionB, WheelPinout::FeedbackA, WheelPinout::FeedbackB);
 
 void setup() {
-  Serial.begin(Settings::SerialBaudRate<unsigned long>());
+  Serial.begin(Settings::SerialBaudRate);
+  driver.initialize();
 
-  wheelLF.setPins(Pinout::WheelLF::PWMA, Pinout::WheelLF::PWMB,
-                  Pinout::WheelLF::DirectionA, Pinout::WheelLF::DirectionB,
-                  Pinout::WheelLF::FeedbackA, Pinout::WheelLF::FeedbackB);
-  wheelRF.setPins(Pinout::WheelRF::PWMA, Pinout::WheelRF::PWMB,
-                  Pinout::WheelRF::DirectionA, Pinout::WheelRF::DirectionB,
-                  Pinout::WheelRF::FeedbackA, Pinout::WheelRF::FeedbackB);
-  wheelLB.setPins(Pinout::WheelLB::PWMA, Pinout::WheelLB::PWMB,
-                  Pinout::WheelLB::DirectionA, Pinout::WheelLB::DirectionB,
-                  Pinout::WheelLB::FeedbackA, Pinout::WheelLB::FeedbackB);
-  wheelRB.setPins(Pinout::WheelRB::PWMA, Pinout::WheelRB::PWMB,
-                  Pinout::WheelRB::DirectionA, Pinout::WheelRB::DirectionB,
-                  Pinout::WheelRB::FeedbackA, Pinout::WheelRB::FeedbackB);
+  Serial.print("Pins set? ");
+  Serial.println(driver.pinsSet());
+  Serial.print("Initialized? ");
+  Serial.println(driver.initialized());
+}
 
-  wheelLF.initialize();
-  wheelRF.initialize();
-  wheelLB.initialize();
-  wheelRB.initialize();
+void testDriveForward(unsigned long delayTime) {
+  Serial.println("Testing driving forward...");
+  for(int i = 0; i < driver.PWMResolution(); i += 10) {
+    driver.setPower(i);
+    delay(delayTime);
+  }
+
+  for(int i = driver.PWMResolution(); i >= 0; i -= 10) {
+    driver.setPower(i);
+    delay(delayTime);
+  }
+
+  driver.setPower(0);
+  Serial.println("Test finished!");
 }
 
 void loop() {
-  if (Serial.available()) {
-    Serial.readBytesUntil('\n', jsonBuffer, Settings::JsonBufferSize);
-    jsonDoc.clear();
-    auto deserializationResult =
-        ArduinoJson::deserializeJson(jsonDoc, jsonBuffer);
-    if (deserializationResult == ArduinoJson::DeserializationError::Ok) {
-      auto wheelInput = algo.translate(jsonDoc["Y"], jsonDoc["X"]);
-      wheelLF.setPower(wheelInput.left_speed);
-      wheelLB.setPower(wheelInput.left_speed);
-      wheelRB.setPower(wheelInput.right_speed);
-      wheelRF.setPower(wheelInput.right_speed);
-      jsonDoc.clear();
-      jsonDoc["ErrorCode"] = 0;
-      jsonDoc["ErrorDescription"] = "OK";
-      jsonDoc["LF"] = wheelLF.power();
-      jsonDoc["RF"] = wheelRF.power();
-      jsonDoc["LB"] = wheelLB.power();
-      jsonDoc["RB"] = wheelRB.power();
-    } else {
-      wheelLF.stop();
-      wheelRF.stop();
-      wheelLB.stop();
-      wheelRB.stop();
-      jsonDoc.clear();
-      jsonDoc["ErrorCode"] = deserializationResult.code();
-      jsonDoc["ErrorDescription"] = deserializationResult.c_str();
-    }
-    ArduinoJson::serializeJson(jsonDoc, Serial);
-    Serial.println();
+  testDriveForward(100);
+  while(true) {
+    delay(100);
   }
 }
