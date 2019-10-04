@@ -1,30 +1,30 @@
 #include "BTS7960.hpp"
 #include <Arduino.h>
 
-BTS7960::BTS7960(uint8_t pwmAPin, uint8_t pwmBPin, uint8_t directionAPin,
-                 uint8_t directionBPin, uint8_t feedbackAPin,
+BTS7960::BTS7960(uint8_t pwmFPin, uint8_t pwmBPin, uint8_t directionFPin,
+                 uint8_t directionBPin, uint8_t feedbackFPin,
                  uint8_t feedbackBPin) {
-  setPins(pwmAPin, pwmBPin, directionAPin, directionBPin, feedbackAPin,
+  setPins(pwmFPin, pwmBPin, directionFPin, directionBPin, feedbackFPin,
           feedbackBPin);
 }
-void BTS7960::setPins(uint8_t pwmAPin, uint8_t pwmBPin, uint8_t directionAPin,
-                      uint8_t directionBPin, uint8_t feedbackAPin,
+void BTS7960::setPins(uint8_t pwmFPin, uint8_t pwmBPin, uint8_t directionFPin,
+                      uint8_t directionBPin, uint8_t feedbackFPin,
                       uint8_t feedbackBPin) {
-  m_directionAPin = directionAPin;
+  m_directionFPin = directionFPin;
   m_directionBPin = directionBPin;
-  m_pwmAPin = pwmAPin;
+  m_pwmFPin = pwmFPin;
   m_pwmBPin = pwmBPin;
-  m_feedbackAPin = feedbackAPin;
+  m_feedbackFPin = feedbackFPin;
   m_feedbackBPin = feedbackBPin;
   pinsHasBeenSet();
 }
 
 bool BTS7960::internalInitialize() {
-  pinMode(m_feedbackAPin, INPUT);
+  pinMode(m_feedbackFPin, INPUT);
   pinMode(m_feedbackBPin, INPUT);
-  pinMode(m_pwmAPin, OUTPUT);
+  pinMode(m_pwmFPin, OUTPUT);
   pinMode(m_pwmBPin, OUTPUT);
-  pinMode(m_directionAPin, OUTPUT);
+  pinMode(m_directionFPin, OUTPUT);
   pinMode(m_directionBPin, OUTPUT);
   return true;
 }
@@ -32,18 +32,20 @@ bool BTS7960::internalInitialize() {
 void BTS7960::setDirection(BTS7960::Direction direction) {
   switch (direction) {
     case Direction::None:
-      digitalWrite(m_directionAPin, LOW);
+      digitalWrite(m_directionFPin, LOW);
       digitalWrite(m_directionBPin, LOW);
       break;
     case Direction::Forward:
-      digitalWrite(m_directionAPin, HIGH);
-      digitalWrite(m_directionBPin, LOW);
+      digitalWrite(m_directionFPin, HIGH);
+      digitalWrite(m_directionBPin, HIGH);
       break;
     case Direction::Backward:
-      digitalWrite(m_directionAPin, LOW);
+      digitalWrite(m_directionFPin, HIGH);
       digitalWrite(m_directionBPin, HIGH);
       break;
   }
+
+  m_direction = direction;
 }
 
 void BTS7960::stop() { setPower(0); }
@@ -52,15 +54,15 @@ void BTS7960::setPower(int power) {
   power = constrain(power, -PWMResolution(), PWMResolution());
   if (power > 0) {
     setDirection(Direction::Forward);
-    analogWrite(m_pwmAPin, power);
+    analogWrite(m_pwmFPin, power);
     analogWrite(m_pwmBPin, 0);
   } else if (power == 0) {
     setDirection(Direction::None);
-    analogWrite(m_pwmAPin, 0);
+    analogWrite(m_pwmFPin, 0);
     analogWrite(m_pwmBPin, 0);
   } else {
     setDirection(Direction::Backward);
-    analogWrite(m_pwmAPin, 0);
+    analogWrite(m_pwmFPin, 0);
     analogWrite(m_pwmBPin, power * -1);
   }
 
@@ -68,3 +70,29 @@ void BTS7960::setPower(int power) {
 }
 
 int BTS7960::power() const { return m_power; }
+
+BTS7960::Direction BTS7960::direction() const { return m_direction; }
+
+double BTS7960::current() const {
+  uint8_t sensorPin{};
+  double reading{0};
+
+  switch (m_direction) {
+    case Direction::None:
+      return 0;
+    case Direction::Forward:
+      sensorPin = m_feedbackFPin;
+    case Direction::Backward:
+      sensorPin = m_feedbackBPin;
+  }
+
+  for (unsigned i = 0; i < m_currentSenseLoops;) {
+    double tempReading = static_cast<double>(analogRead(sensorPin));
+    if (tempReading > 0) {
+      reading += tempReading;
+      i++;
+    }
+  }
+
+  return reading / m_currentSenseLoops;
+}
