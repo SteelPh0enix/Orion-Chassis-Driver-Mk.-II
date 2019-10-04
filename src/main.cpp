@@ -4,7 +4,9 @@
 #include <Settings.hpp>
 
 namespace WheelPinout = Pinout::WheelRF;
-BTS7960 driver(WheelPinout::PWMA, WheelPinout::PWMB, WheelPinout::DirectionA, WheelPinout::DirectionB, WheelPinout::FeedbackA, WheelPinout::FeedbackB);
+BTS7960 driver(WheelPinout::PWMF, WheelPinout::PWMB, WheelPinout::DirectionF,
+               WheelPinout::DirectionB, WheelPinout::FeedbackF,
+               WheelPinout::FeedbackB);
 
 void setup() {
   Serial.begin(Settings::SerialBaudRate);
@@ -18,23 +20,35 @@ void setup() {
 
 void testDriveForward(unsigned long delayTime) {
   Serial.println("Testing driving forward...");
-  for(int i = 0; i < driver.PWMResolution(); i += 10) {
+  for (int i = 0; i < driver.PWMResolution(); i += 10) {
     driver.setPower(i);
+    Serial.print("PWM power: ");
+    Serial.print(driver.power());
+    Serial.print(", current reading: ");
+    Serial.println(driver.current());
     delay(delayTime);
   }
 
-  for(int i = driver.PWMResolution(); i >= 0; i -= 10) {
+  for (int i = driver.PWMResolution(); i >= 0; i -= 10) {
     driver.setPower(i);
+    Serial.print("PWM power: ");
+    Serial.print(driver.power());
+    Serial.print(", current reading: ");
+    Serial.println(driver.current());
     delay(delayTime);
   }
 
   driver.setPower(0);
+  Serial.print("PWM power: ");
+  Serial.print(driver.power());
+  Serial.print(", current reading: ");
+  Serial.println(driver.current());
   Serial.println("Test finished!");
 }
 
 void loop() {
   testDriveForward(100);
-  while(true) {
+  while (true) {
     delay(100);
   }
 }

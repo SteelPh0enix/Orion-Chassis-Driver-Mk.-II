@@ -16,7 +16,7 @@ ArduinoJson::StaticJsonDocument<Settings::JsonBufferSize> jsonDoc{};
 DefaultDriveAlgorithm algo;
 
 void setup() {
-  Serial.begin(Settings::SerialBaudRate<unsigned long>());
+  Serial.begin(Settings::SerialBaudRate);
 
   wheelLF.setPins(Pinout::WheelLF::PWMA, Pinout::WheelLF::PWMB,
                   Pinout::WheelLF::DirectionA, Pinout::WheelLF::DirectionB,

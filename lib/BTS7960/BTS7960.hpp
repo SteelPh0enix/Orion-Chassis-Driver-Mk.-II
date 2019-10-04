@@ -26,6 +26,7 @@ class BTS7960 : public Module {
  private:
   virtual bool internalInitialize();
   void setDirection(Direction direction);
+  double calculateCurrent(double analogInput) const;
 
   uint8_t m_pwmFPin{};
   uint8_t m_pwmBPin{};
@@ -36,5 +37,5 @@ class BTS7960 : public Module {
 
   int m_power{};
   Direction m_direction{Direction::None};
-  unsigned m_currentSenseLoops{5};
+  unsigned m_currentSenseLoops{15};
 };

@@ -75,6 +75,7 @@ BTS7960::Direction BTS7960::direction() const { return m_direction; }
 
 double BTS7960::current() const {
   uint8_t sensorPin{};
+  unsigned successfulReads{0};
   double reading{0};
 
   switch (m_direction) {
@@ -86,13 +87,21 @@ double BTS7960::current() const {
       sensorPin = m_feedbackBPin;
   }
 
-  for (unsigned i = 0; i < m_currentSenseLoops;) {
+  for (unsigned i = 0; i < m_currentSenseLoops; i++) {
     double tempReading = static_cast<double>(analogRead(sensorPin));
     if (tempReading > 0) {
       reading += tempReading;
-      i++;
+      successfulReads++;
     }
   }
 
-  return reading / m_currentSenseLoops;
+  if (successfulReads > 0) {
+    return calculateCurrent(reading / successfulReads);
+  } else {
+    return 0.;
+  }
+}
+
+double BTS7960::calculateCurrent(double input) const {
+  return (VoltsPerADCUnit<double>() * input) * 8.5;
 }
