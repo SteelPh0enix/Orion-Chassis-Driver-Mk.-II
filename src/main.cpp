@@ -3,7 +3,7 @@
 #include <Pinout.hpp>
 #include <Settings.hpp>
 
-namespace WheelPinout = Pinout::WheelRF;
+namespace WheelPinout = Pinout::WheelLB;
 BTS7960 driver(WheelPinout::PWMF, WheelPinout::PWMB, WheelPinout::DirectionF,
                WheelPinout::DirectionB, WheelPinout::FeedbackF,
                WheelPinout::FeedbackB);
@@ -29,7 +29,16 @@ void testDriveForward(unsigned long delayTime) {
     delay(delayTime);
   }
 
-  for (int i = driver.PWMResolution(); i >= 0; i -= 10) {
+  for (int i = driver.PWMResolution(); i >= -driver.PWMResolution(); i -= 10) {
+    driver.setPower(i);
+    Serial.print("PWM power: ");
+    Serial.print(driver.power());
+    Serial.print(", current reading: ");
+    Serial.println(driver.current());
+    delay(delayTime);
+  }
+
+  for (int i = -driver.PWMResolution(); i < 0; i += 10) {
     driver.setPower(i);
     Serial.print("PWM power: ");
     Serial.print(driver.power());

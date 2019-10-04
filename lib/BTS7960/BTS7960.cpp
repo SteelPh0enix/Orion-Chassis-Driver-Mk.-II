@@ -30,6 +30,8 @@ bool BTS7960::internalInitialize() {
 }
 
 void BTS7960::setDirection(BTS7960::Direction direction) {
+  // TODO: Find out why direction settings is not working properly
+  // (when setting pins to F LOW, B HIGH or F HIGH B LOW, nothing happens)
   switch (direction) {
     case Direction::None:
       digitalWrite(m_directionFPin, LOW);
