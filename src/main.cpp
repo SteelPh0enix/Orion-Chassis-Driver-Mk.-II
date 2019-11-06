@@ -18,18 +18,18 @@ DefaultDriveAlgorithm algo;
 void setup() {
   Serial.begin(Settings::SerialBaudRate);
 
-  wheelLF.setPins(Pinout::WheelLF::PWMA, Pinout::WheelLF::PWMB,
-                  Pinout::WheelLF::DirectionA, Pinout::WheelLF::DirectionB,
-                  Pinout::WheelLF::FeedbackA, Pinout::WheelLF::FeedbackB);
-  wheelRF.setPins(Pinout::WheelRF::PWMA, Pinout::WheelRF::PWMB,
-                  Pinout::WheelRF::DirectionA, Pinout::WheelRF::DirectionB,
-                  Pinout::WheelRF::FeedbackA, Pinout::WheelRF::FeedbackB);
-  wheelLB.setPins(Pinout::WheelLB::PWMA, Pinout::WheelLB::PWMB,
-                  Pinout::WheelLB::DirectionA, Pinout::WheelLB::DirectionB,
-                  Pinout::WheelLB::FeedbackA, Pinout::WheelLB::FeedbackB);
-  wheelRB.setPins(Pinout::WheelRB::PWMA, Pinout::WheelRB::PWMB,
-                  Pinout::WheelRB::DirectionA, Pinout::WheelRB::DirectionB,
-                  Pinout::WheelRB::FeedbackA, Pinout::WheelRB::FeedbackB);
+  wheelLF.setPins(Pinout::WheelLF::PWMF, Pinout::WheelLF::PWMB,
+                  Pinout::WheelLF::DirectionF, Pinout::WheelLF::DirectionB,
+                  Pinout::WheelLF::FeedbackF, Pinout::WheelLF::FeedbackB);
+  wheelRF.setPins(Pinout::WheelRF::PWMF, Pinout::WheelRF::PWMB,
+                  Pinout::WheelRF::DirectionF, Pinout::WheelRF::DirectionB,
+                  Pinout::WheelRF::FeedbackF, Pinout::WheelRF::FeedbackB);
+  wheelLB.setPins(Pinout::WheelLB::PWMF, Pinout::WheelLB::PWMB,
+                  Pinout::WheelLB::DirectionF, Pinout::WheelLB::DirectionB,
+                  Pinout::WheelLB::FeedbackF, Pinout::WheelLB::FeedbackB);
+  wheelRB.setPins(Pinout::WheelRB::PWMF, Pinout::WheelRB::PWMB,
+                  Pinout::WheelRB::DirectionF, Pinout::WheelRB::DirectionB,
+                  Pinout::WheelRB::FeedbackF, Pinout::WheelRB::FeedbackB);
 
   wheelLF.initialize();
   wheelRF.initialize();
