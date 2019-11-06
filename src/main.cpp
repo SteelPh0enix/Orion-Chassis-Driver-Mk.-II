@@ -62,6 +62,10 @@ void loop() {
       wheelLB.stop();
       wheelRB.stop();
       jsonDoc.clear();
+      jsonDoc["LF"] = wheelLF.power();
+      jsonDoc["RF"] = wheelRF.power();
+      jsonDoc["LB"] = wheelLB.power();
+      jsonDoc["RB"] = wheelRB.power();
       jsonDoc["ErrorCode"] = deserializationResult.code();
       jsonDoc["ErrorDescription"] = deserializationResult.c_str();
     }
