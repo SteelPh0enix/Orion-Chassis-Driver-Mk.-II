@@ -3,7 +3,8 @@ import json
 import copy
 import serial
 
-CHASSIS_SERIAL_PORT = "COM7"
+# CHASSIS_SERIAL_PORT = "COM7"
+CHASSIS_SERIAL_PORT = "COM6"
 CHASSIS_SERIAL_BAUD = 115200
 
 CHASSIS_SERIAL = serial.Serial()

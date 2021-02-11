@@ -1,7 +1,7 @@
 #pragma once
 #include "Arduino.h"
 
-#define DEBUG 
+// #define DEBUG 
 
 template<typename T = const char*>
 void serial_debug(const char* label, T value = "") {

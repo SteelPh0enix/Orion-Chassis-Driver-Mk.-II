@@ -41,10 +41,9 @@ void setup() {
 
 void loop() {
 
-  //Test case: {Y:2,X:-2}
-  //Test case: {Y:-2,X:2}
-  //Test case: {Y:2,X:2}
-  //Test case: {Y:-2,X:-2}
+  //Test case: {Y:0,X:0}
+  //Test case: {Y:70,X:0}
+
 
   if (Serial.available()) {
     Serial.readBytesUntil('\n', jsonBuffer, Settings::JsonBufferSize);
