@@ -4,6 +4,7 @@
 #include <Pinout.hpp>
 #include <Settings.hpp>
 #include <driving_algorithm.hpp>
+#include <serial_debug.hpp>
 
 BTS7960 wheelLF;
 BTS7960 wheelRF;
@@ -37,14 +38,46 @@ void setup() {
   wheelRB.initialize();
 }
 
+
 void loop() {
+
+  //Test case: {Y:2,X:-2}
+  //Test case: {Y:-2,X:2}
+  //Test case: {Y:2,X:2}
+  //Test case: {Y:-2,X:-2}
+
   if (Serial.available()) {
     Serial.readBytesUntil('\n', jsonBuffer, Settings::JsonBufferSize);
+
+    #ifdef DEBUG
+      Serial.write("Request received: \n");
+      Serial.println(jsonBuffer);
+    #endif
+
     jsonDoc.clear();
     auto deserializationResult =
         ArduinoJson::deserializeJson(jsonDoc, jsonBuffer);
+
+    #ifdef DEBUG
+      Serial.println("\nContains:");
+      if (jsonDoc.containsKey("Y")) {
+        serial_debug("Y exists!");
+      }
+      if (jsonDoc.containsKey("X")) {
+        serial_debug("X exists!");
+      }
+      Serial.println("\nValues:");
+      if (jsonDoc.containsKey("Y")) {
+        serial_debug("Y: ", (int)jsonDoc["Y"]);
+      }
+      if (jsonDoc.containsKey("X")) {
+        serial_debug("X: ", (int)jsonDoc["X"]);
+      }
+    #endif
+    
     if (deserializationResult == ArduinoJson::DeserializationError::Ok) {
-      auto wheelInput = algo.translate(jsonDoc["Y"], jsonDoc["X"]);
+      
+      auto wheelInput = algo.translate((int)jsonDoc["Y"], (int)jsonDoc["X"]);
       wheelLF.setPower(wheelInput.left_speed);
       wheelLB.setPower(wheelInput.left_speed);
       wheelRB.setPower(wheelInput.right_speed);
@@ -69,6 +102,11 @@ void loop() {
       jsonDoc["ErrorCode"] = deserializationResult.code();
       jsonDoc["ErrorDescription"] = deserializationResult.c_str();
     }
+
+    #ifdef DEBUG
+      Serial.write("\nResponse: \n");
+    #endif
+
     ArduinoJson::serializeJson(jsonDoc, Serial);
     Serial.println();
   }

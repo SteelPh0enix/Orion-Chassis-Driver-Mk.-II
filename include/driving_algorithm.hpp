@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include <serial_debug.hpp>
 
 struct DefaultDriveAlgorithm {
   struct Output {
@@ -12,6 +13,10 @@ struct DefaultDriveAlgorithm {
     int drive_power =
         map(constrain(sqrt(pow(rotation, 2) + pow(speed, 2)), 0, 360), 0, 360,
             0, 250);
+
+    #ifdef DEBUG
+      serial_debug("\nDrive power:", drive_power);
+    #endif
 
     double angle = atan2(speed, rotation);
     int direction = (speed >= 0 ? 1 : -1);
